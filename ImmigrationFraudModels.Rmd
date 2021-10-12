@@ -1,0 +1,225 @@
+---
+title: "ImmigrationFraudModel"
+author: "Arush Kukreja"
+date: "9/21/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+
+# Load libraries
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(tidymodels)
+library(vip)
+
+# Load Dataset
+
+# data_DF1 <- read_csv("C:/Users/ak-77/Desktop/GMU/Fall 2021/DAEN 690/ImmigrationFraudData1.csv", col_types = cols(
+#                                      Fraud = col_factor(levels = c("Yes", "No")), 
+#                                      Status = col_factor(levels = c("US Citizen", "Immigrant"))))
+# 
+# data_DF1 <- read_csv("C:/Users/ak-77/Desktop/GMU/Fall 2021/DAEN 690/ImmigrationFraudData1.csv", col_types = cols(
+#                                      Fraud = col_factor(levels = c("Yes", "No")), 
+#                                      Status = col_factor(levels = c("US Citizen", "Immigrant")),
+#                                      Sex = col_factor(levels = c("M", "F")),
+#                                      Race = col_factor(levels = c("White", "Asian", "African American", "American Indian", "Other Pacific Islander", "Multiple Races",
+#                                                                   "Hispanic")),
+#                                      Hispanic = col_factor(levels = c("Yes", "No")),
+#                                      Education = col_factor(levels = c("MA", "BA", "12th grade", "GED", "HS", "college")),
+#                                      Employment = col_factor(levels = c("FT", "PT", "Unemployed", "Temporary")),
+#                                      Monthly_income = col_number(),
+#                                      Annual_Income = col_number(),
+#                                      Marital_Status = col_factor(levels = c("Married", "Divorced")),
+#                                      Citizenship = col_factor(levels = c("United States", "Mexico", "India", "China", "Philippines", "El Salvador", "Vietnam", "Cuba",
+#                                                                          "Dominican Republic", "South Korea", "Guatemala")),
+#                                      Zip_Code = col_character(), 
+#                                      Previously_Denied_Visa = col_factor(levels = c("Yes", "No")),
+#                                      Foreign_Residence_Requirement = col_factor(levels = c("Yes", "No")),
+#                                      History_of_Crime = col_factor(levels = c("Yes", "No")), 
+#                                      Expiration_Date_of_Passport = col_date(format = "%m/%d/%Y"),
+#                                      Date_of_Marriage = col_date(format = "%m/%d/%Y"), 
+#                                      Expired_Passport_Marriage = col_factor(levels = c("Yes", "No")),
+#                                      Spouse_DOB = col_date(format = "%m/%d/%Y"), 
+#                                      `Previously_Married?` = col_factor(levels = c("Yes", "No"))))
+
+data_DF <- read_csv("C:/Users/ak-77/Desktop/GMU/Fall 2021/DAEN 690/GCMF10k_3.csv", col_types = cols(Annual_Income = col_number(), 
+        Spouse_Annual_Income = col_number()), na = "NA") %>% select(-c("Address", "City", "Monthly_income", "Expiration_Date_of_Passport", "Marital_Status", "Date_of_Marriage", "Zip_Code", "Spouse_DOB", "State", "Education", "ID"))
+colnames(data_DF)[colnames(data_DF) == "Previously_Married?"] <- "Previously_Married"
+data_DF$Fraud <- as.factor(data_DF$Fraud)
+data_DF$Status <- as.factor(data_DF$Status)
+data_DF$Age <- as.numeric(data_DF$Age)
+data_DF$Sex <- as.factor(data_DF$Sex)
+data_DF$Race <- factor(data_DF$Race, levels= c("White", "Asian", "African American", "American Indian", "Other Pacific Islander", "Multiple Races", "Hispanic"))
+data_DF$Citizenship <- factor(data_DF$Citizenship, levels= c("United States", "Mexico", "India", "China", "Philippines", "El Salvador", "Vietnam", "Cuba",  "Dominican Republic", "South Korea", "Guatemala", "Hispanic"))
+data_DF$Hispanic <- as.factor(data_DF$Hispanic)
+#data_DF$Education <- factor(data_DF$Education, levels= c("MA", "BA", "college", "HS", "GED", "12th grade"))
+data_DF$Employment <- factor(data_DF$Employment, levels= c("FT", "PT", "Unemployed", "Temporary"))
+#data_DF$Marital_Status <- as.factor(data_DF$Marital_Status)
+data_DF$Previously_Denied_Visa <- as.factor(data_DF$Previously_Denied_Visa)
+data_DF$Foreign_Residence_Requirement <- as.factor(data_DF$Foreign_Residence_Requirement)
+data_DF$History_of_Crime <- as.factor(data_DF$History_of_Crime)
+data_DF$Spouse_History_of_Crime <- as.factor(data_DF$Spouse_History_of_Crime)
+data_DF$Expired_Passport_Marriage <- as.factor(data_DF$Expired_Passport_Marriage)
+data_DF$Previously_Married <- as.factor(data_DF$Previously_Married)
+data_DF$HigherEducation <- as.factor(data_DF$HigherEducation)
+data_DF$Spouse_Status <- as.factor(data_DF$Spouse_Status)
+data_DF$Spouse_Sex <- as.factor(data_DF$Spouse_Sex)
+head(data_DF)
+
+
+
+data_DF <- data_DF[!apply(is.na(data_DF) | data_DF == "", 1, all),]
+
+
+
+
+```
+
+## Logistic Regression Model:
+
+```{r}
+
+set.seed(314)
+
+data_split <- initial_split(data_DF, prop = 0.75,
+                                strata = Fraud)
+
+data_training <- data_split %>% training()
+
+data_test <- data_split %>% testing()
+
+```
+
+## Feature Engineering
+
+Next we create our feature engineering pipeline. In this case, we will perform the same steps as our prior feature engineering:
+
+-   Remove skewness from numeric predictors
+-   Normalize all numeric predictors
+-   Create dummy variables for all nominal predictors
+
+```{r}
+
+data_recipe <- recipe(Fraud ~ ., data = data_training) %>% 
+                   step_YeoJohnson(all_numeric(), -all_outcomes()) %>% 
+                   step_normalize(all_numeric(), -all_outcomes()) %>% 
+                   step_dummy(all_nominal(), -all_outcomes())
+```
+
+```{r}
+
+data_recipe %>% 
+  prep(training = data_training) %>% 
+  bake(new_data = NULL)
+
+```
+
+```{r}
+logistic_model <- logistic_reg() %>% 
+                  set_engine('glm') %>% 
+                  set_mode('classification')
+
+data_wf <- workflow() %>% 
+               add_model(logistic_model) %>% 
+               add_recipe(data_recipe)
+
+logistic_fit <- data_wf %>% 
+                fit(data = data_training)
+
+data_trained_model <- logistic_fit %>% 
+                       pull_workflow_fit()
+
+vip(data_trained_model)
+
+```
+
+```{r warning = FALSE, message = FALSE}
+
+predictions_categories <- predict(logistic_fit, 
+                                  new_data = data_test)
+predictions_probabilities <- predict(logistic_fit, 
+                                     new_data = data_test, 
+                                     type = 'prob')
+
+# Combine
+test_results <- data_test %>% select(Fraud) %>% 
+                bind_cols(predictions_categories) %>% 
+                bind_cols(predictions_probabilities)
+
+test_results
+
+conf_mat(test_results,
+         truth = Fraud,
+         estimate = .pred_class)
+
+roc_curve(test_results,
+          truth = Fraud,
+          estimate = .pred_No)
+
+roc_curve(test_results,
+          truth = Fraud,
+          estimate = .pred_No) %>%
+  autoplot()
+
+roc_auc(test_results,
+        truth = Fraud,
+        .pred_No)
+
+my_metrics <- metric_set(accuracy, sens, spec, f_meas, roc_auc)
+
+my_metrics(test_results,
+           truth = Fraud,
+           estimate = .pred_class,
+           .pred_No)
+
+last_fit_applicant <- data_wf %>%
+                     last_fit(split = data_split,
+                              metrics = my_metrics)
+```
+
+
+## Data Visualization Section:
+
+```{r}
+totalapp = nrow(data_DF)
+totalfraud = nrow(data_DF %>% filter(Fraud == "Yes"))
+
+fraudSummary <- data_DF %>% group_by(Fraud) %>%
+                            summarise(n_fraud = n(),
+                                      percent_of_total = n()/totalapp *100)
+fraudSummary
+
+fraud_citizenship <- data_DF %>% group_by(Fraud, Citizenship) %>% filter(Fraud == "Yes") %>%
+                                  summarise(n_fraud = n(),
+                                       percent_of_total = n()/totalfraud *100) %>% arrange(desc(percent_of_total))
+fraud_citizenship
+
+fraud_Race <- data_DF %>% group_by(Fraud, Race) %>% filter(Fraud == "Yes") %>%
+                                  summarise(n_fraud = n(),
+                                       percent_of_total = n()/totalfraud *100) %>% arrange(desc(percent_of_total))
+fraud_Race
+
+AverageAge <- data_DF  %>% mutate(Age_Category = cut_width(Age, width = 10, boundary = 0)) %>%
+                                    group_by(Age_Category) %>% filter(Fraud == "Yes") %>%
+                                    summarize(n_applicants = n(),
+                                              Percentage_of_total_Fraud = (n()/totalfraud)*100)
+AverageAge
+
+```
+
