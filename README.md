@@ -10,3 +10,9 @@ Description : This is the initial data we have obtain from our reseach obtained 
 
 File name: ImmigrationFraudModels.Rmd
 Description: This is an R file which has code related to Logistic Regression model and visualisations.
+
+File name:SVM_MarriageFraud.ipynb
+Description: This is python Jupyter Notebook file which has code related to SVM model.
+
+File name:SVM_MarriageFraud.ipynb
+Description: This is python Jupyter Notebook file which has code related to SVM model.
