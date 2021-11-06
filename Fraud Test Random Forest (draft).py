@@ -8,7 +8,7 @@ import re
 import os  # for OS interface (to get/change directory)
 # display and set working/data directory
 os.getcwd()
-os.chdir('C:/Users/Jiwon Chang/Desktop/FALL 2021/DAEN 690')
+os.chdir('dr')
 os.getcwd()
 
 
