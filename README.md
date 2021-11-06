@@ -16,3 +16,8 @@ Description: This is python Jupyter Notebook file which has code related to SVM 
 
 File name:SVM_MarriageFraud.ipynb
 Description: This is python Jupyter Notebook file which has code related to SVM model.
+
+File name:NaiveBayesClassifier.RMd
+Description: This is an R file which has code related to Naive Bayes Classifier.
+
+
