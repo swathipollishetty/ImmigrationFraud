@@ -1,0 +1,165 @@
+
+```{r }
+#Load the required packages
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(ggplot2)
+library(tidymodels)
+library(vip)
+library(caret)
+library(discrim)
+library(naivebayes)
+library(Boruta)
+
+
+#Load the Data 
+gcmf_df <- read_csv("C:\\Users\\sravan\\Downloads\\GCMF10k_6.csv")
+
+count(gcmf_df)
+
+gcmf_df$Fraud <- as.factor(gcmf_df$Fraud)
+gcmf_df$StatusSpouse1 <- as.factor(gcmf_df$StatusSpouse1)
+gcmf_df$StatusSpouse2 <- as.factor(gcmf_df$StatusSpouse2)
+gcmf_df$Age_Spouse1 <- as.numeric(gcmf_df$Age_Spouse1)
+gcmf_df$Age_Spouse2 <- as.numeric(gcmf_df$Age_Spouse2)
+gcmf_df$Sex_Spouse1 <- as.factor(gcmf_df$Sex_Spouse2)
+gcmf_df$Citizenship_Spouse1 <- factor(gcmf_df$Citizenship_Spouse1, levels= c("United States", "Mexico", "India", "China", "Philippines", "El Salvador", "Vietnam", "Cuba",  "Dominican Republic", "South Korea", "Guatemala", "Hispanic"))
+gcmf_df$Citizenship_Spouse2 <- factor(gcmf_df$Citizenship_Spouse2, levels= c("United States", "Mexico", "India", "China", "Philippines", "El Salvador", "Vietnam", "Cuba",  "Dominican Republic", "South Korea", "Guatemala", "Hispanic"))
+gcmf_df$Hispanic_Spouse1 <- as.factor(gcmf_df$Hispanic_Spouse1)
+gcmf_df$Hispanic_Spouse2 <- as.factor(gcmf_df$Hispanic_Spouse2)
+gcmf_df$Education_Spouse1 <- factor(gcmf_df$Education_Spouse1, levels= c("MA", "BA", "college", "HS", "GED", "12th grade"))
+gcmf_df$Education_Spouse2 <- factor(gcmf_df$Education_Spouse2, levels= c("MA", "BA", "college", "HS", "GED", "12th grade"))
+gcmf_df$Employment_Spouse1 <- factor(gcmf_df$Employment_Spouse1, levels= c("FT", "PT", "Unemployed", "Temporary"))
+gcmf_df$Employment_Spouse2 <- factor(gcmf_df$Employment_Spouse2, levels= c("FT", "PT", "Unemployed", "Temporary"))
+gcmf_df$Previously_Denied_Visa_Immigrant <- as.factor(gcmf_df$Previously_Denied_Visa_Immigrant)
+gcmf_df$Foreign_Residence_Requirement_Immigrant <- as.factor(gcmf_df$Foreign_Residence_Requirement_Immigrant)
+gcmf_df$History_of_Crime_UScitizen <- as.factor(gcmf_df$History_of_Crime_UScitizen)
+gcmf_df$History_of_Crime_Immigrant <- as.factor(gcmf_df$History_of_Crime_Immigrant)
+gcmf_df$Expired_Passport_Marriage <- as.factor(gcmf_df$Expired_Passport_Marriage)
+gcmf_df$Previously_Married_Uscitizen <- as.factor(gcmf_df$Previously_Married_Uscitizen)
+gcmf_df$HigherEducation_Immigrant <- as.factor(gcmf_df$HigherEducation_Immigrant)
+gcmf_df$HigherEducation_Uscitizen <- as.factor(gcmf_df$HigherEducation_Uscitizen)
+
+
+
+#displaying the column names
+names(gcmf_df)
+
+#Display top values of the dataset
+head(gcmf_df)
+
+
+
+
+
+
+#Drop less relevant features
+#gcmf_df <- gcmf_df  %>% select(-c("USCIS_id_Immigrant","Hispanic_Spouse1","Hispanic_Spouse2","Sex_Spouse2","Education_Spouse2","Education_Spouse1","Hispanic_Spouse1","Sex_Spouse1","StatusSpouse1","Age_Spouse1","Monthly_Income_Spouse1","Monthly_Income_Spouse2","Address","City","State","Zip_Code","Expiration_Date_of_Passport_Immigrant","Date_of_Marriage","Race_Spouse1"))
+
+gcmf_df <- gcmf_df  %>% select(-c("Zip_Code","Address","City","State","Employment_Spouse1","Employment_Spouse2","USCIS_id_Immigrant","Annual_Income_Spouse2","Annual_Income_Spouse1","Sex_Spouse1","Sex_Spouse2","Race_Spouse1","Race_Spouse2"))
+gcmf_df <- gcmf_df  %>% select(-c("History_of_Crime_Immigrant","Education_Immigrant","Age_of_Immigrant","Age_of_Uscitizen","Education_UScitizen","Age_Spouse2","StatusSpouse2","Citizenship_Spouse2","Citizenship_Spouse1","Marital_Status","StatusSpouse2","StatusSpouse2","Hispanic_Spouse1","Hispanic_Spouse2","Education_Spouse2","Education_Spouse1","Hispanic_Spouse1","StatusSpouse1","Age_Spouse1","Monthly_Income_Spouse1","Monthly_Income_Spouse2","Expiration_Date_of_Passport_Immigrant","Date_of_Marriage"))
+
+#Return sum of null values in columns
+colSums(is.na(gcmf_df))
+
+
+#Feature Importance using Boruta Package
+set.seed(111)
+boruta <- Boruta(Fraud~.,data=gcmf_df,doTrace=2,maxRuns=15)
+par(mar=c(13,5,1,1))
+plot(boruta,las=2,cex.axis=0.9,cey.axis=0.9,yaxp = c(0, 120, 12))
+
+#relevel the fraud factor
+gcmf_df$Fraud = relevel(gcmf_df$Fraud, ref = 2)
+levels(gcmf_df$Fraud)
+
+
+#split the data into test and train
+set.seed(111)
+data_split <- initial_split(gcmf_df, prop = 0.80,strata = Fraud)
+data_training <- data_split %>% training()
+data_test <- data_split %>% testing()
+
+#Create a Feature Engineering Pipeline
+
+data_recipe <- recipe(Fraud ~ ., data = data_training) %>% 
+  step_YeoJohnson(all_numeric(), -all_outcomes()) %>% 
+  step_normalize(all_numeric(), -all_outcomes()) %>% 
+  step_dummy(all_nominal(), -all_outcomes())
+
+data_recipe %>% prep(training = data_training) %>%  bake(new_data = NULL)
+
+
+#Specify the model
+
+nb_model <- naive_Bayes() %>% set_mode("classification") %>% set_engine("naivebayes")
+
+nb_model 
+
+#Create a workflow
+
+data_wf <- workflow() %>% add_model(nb_model) %>% add_recipe(data_recipe)
+
+#Fit the model
+
+nb_fit<-data_wf %>% fit(data = data_training)
+
+#Explore our trained Model
+
+data_trained_model <- nb_fit %>% extract_fit_parsnip()
+
+
+#Evaluate the performance
+
+#Get predictions on test set
+
+predictions_categories <- predict(nb_fit,new_data = data_test)
+
+
+predictions_categories 
+
+#Get the prediction probabilities
+predictions_probabilities <- predict(nb_fit, new_data = data_test,type = 'prob')
+
+predictions_probabilities
+
+# Combine
+test_results <- data_test %>% select(Fraud) %>% bind_cols(predictions_categories) %>%  bind_cols(predictions_probabilities)
+test_results
+
+#Display confusion matrix
+conf_mat(test_results,truth = Fraud,estimate = .pred_class)
+
+#Display ROC plot
+roc_curve(test_results,truth = Fraud,estimate = .pred_Yes)
+
+roc_curve(test_results,truth = Fraud,estimate = .pred_Yes) %>% autoplot()
+
+#Get the ROC AUC
+roc_auc(test_results,truth = Fraud, .pred_Yes)
+
+#Display accuracy
+accuracy(test_results, truth = Fraud, estimate = .pred_class)
+
+#Display f1 score
+f_meas(test_results, truth = Fraud, estimate = .pred_class)
+
+
+my_metrics <- metric_set(accuracy, sens, spec, f_meas, roc_auc)
+
+my_metrics(test_results, 
+           truth = Fraud, 
+           estimate = .pred_class,
+           .pred_Yes)
+```
+
+
+
+---
+title: NaiveBayesClassifier.R
+author: sravan
+date: '2021-11-06'
+
+---
