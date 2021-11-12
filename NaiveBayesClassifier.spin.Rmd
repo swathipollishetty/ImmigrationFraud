@@ -17,8 +17,10 @@ library(Boruta)
 #Load the Data 
 gcmf_df <- read_csv("C:\\Users\\sravan\\Downloads\\GCMF10k_6.csv")
 
+#get the row count
 count(gcmf_df)
 
+#convert to factors
 gcmf_df$Fraud <- as.factor(gcmf_df$Fraud)
 gcmf_df$StatusSpouse1 <- as.factor(gcmf_df$StatusSpouse1)
 gcmf_df$StatusSpouse2 <- as.factor(gcmf_df$StatusSpouse2)
@@ -153,6 +155,22 @@ my_metrics(test_results,
            truth = Fraud, 
            estimate = .pred_class,
            .pred_Yes)
+           
+ #Automating the process using last-fit function
+last_fit_model <- data_wf %>%
+  last_fit(split = data_split,
+           metrics = my_metrics)
+
+#obtaining metrics on test set
+last_fit_model %>% 
+  collect_metrics()
+
+#obtaining a dataframe with test set results
+last_fit_results <- last_fit_model %>% 
+  collect_predictions()
+
+last_fit_results
+
 ```
 
 
