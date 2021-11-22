@@ -19,3 +19,9 @@ Description: This is an R file which has code related to Naive Bayes Classifier.
 
 File name:Fraud Test Random Forest (draft).py
 Description: This is a Python Jypyter Notebook file which has code related to Random Forest. 
+
+File name: Final Visualizations(1).twbx
+Description: This is a Tableau file containing all visualizations and dashboards completed in Tableau.
+
+File Name: Correlation Plots.R
+Description: This is an R Studio file containing code for numeric and important variable correlation plots (4).
