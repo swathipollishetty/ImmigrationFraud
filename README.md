@@ -36,7 +36,7 @@ File name: Fraud Test Random Forest (draft).py
 Description: This is a Python Jupyter Notebook file which has code related to Random Forest. 
 
 ## Tableau Visualizations 
-[File name: Final Visualizations(1).twbx](/Final Visualizations (1).twbx)
+[File name: Final Visualizations(1).twbx](./Final Visualizations (1).twbx)
 Description: This is a Tableau file containing all visualizations and dashboards completed in Tableau.
 
 ## Correlation Plot
