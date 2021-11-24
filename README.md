@@ -11,13 +11,13 @@ The U.S. Citizenship and Immigration Services is an agency that administers the 
 * [Tableau Visualizations](##tableau-visualizations)
 * [Correlation Plot](##correlation-plot)
 
-## Final Dataset
-File name: GCMF10K_3.csv
-Description: The dataset we have is an output of our research about the Green Card marriage fraud studies. It includes 10000 rows and 33 columns.
+## Final Dataset  
+File name: GCMF10K_3.csv  
+Description: The dataset we have is an output of our research about the Green Card marriage fraud studies. It includes 10000 rows and 33 columns.  
 
-## Initial Dataset
-File name: ResearchlData.csv
-Description: This is the initial data we have obtain from our research obtained from a study. It includes 28 rows and 8 columns.
+## Initial Dataset  
+File name: ResearchlData.csv  
+Description: This is the initial data we have obtain from our research obtained from a study. It includes 28 rows and 8 columns.  
 
 ## Logistic Regression Model
 File name: ImmigrationFraudModels.Rmd
