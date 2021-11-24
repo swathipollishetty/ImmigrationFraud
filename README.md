@@ -4,12 +4,12 @@ The U.S. Citizenship and Immigration Services is an agency that administers the 
 ## Table of Contents
 * [Final Dataset](##final-dataset) 
 * [Initial Dataset](##initial-dataset)
-[Logistic Regression Model](##logistic-regression-model)
-[Support Vector Machine Model](##support-vector-machine-model)
-[Naïve Bayes Classification Model](##naive-bayes-classification-model)
-[Random Forest Model](##random-forest-model)
-[Tableau Visualizations](##tableau-visualizations)
-[Correlation Plot](##correlation-plot)
+* [Logistic Regression Model](##logistic-regression-model)
+* [Support Vector Machine Model](##support-vector-machine-model)
+* [Naïve Bayes Classification Model](##naive-bayes-classification-model)
+* [Random Forest Model](##random-forest-model)
+* [Tableau Visualizations](##tableau-visualizations)
+* [Correlation Plot](##correlation-plot)
 
 ## Final Dataset
 File name: GCMF10K_3.csv
