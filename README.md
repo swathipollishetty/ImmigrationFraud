@@ -19,26 +19,26 @@ Description: The dataset we have is an output of our research about the Green Ca
 File name: ResearchlData.csv  
 Description: This is the initial data we have obtain from our research obtained from a study. It includes 28 rows and 8 columns.  
 
-## Logistic Regression Model
-File name: ImmigrationFraudModels.Rmd
-Description: This is an R file which has code related to Logistic Regression model and visualizations.
+## Logistic Regression Model  
+File name: ImmigrationFraudModels.Rmd  
+Description: This is an R file which has code related to Logistic Regression model and visualizations.  
 
-## Support Vector Machine Model
-File name: SVM_MarriageFraud.ipynb
-Description: This is python Jupyter Notebook file which has code related to SVM model.
+## Support Vector Machine Model  
+File name: SVM_MarriageFraud.ipynb  
+Description: This is python Jupyter Notebook file which has code related to SVM model.  
 
-## Naïve Bayes Classification Model
-[File name: NaiveBayesClassifier.spin.Rmd](
-Description: This is an R file which has code related to Naive Bayes Classifier.
+## Naïve Bayes Classification Model  
+File name: NaiveBayesClassifier.spin.Rmd  
+Description: This is an R file which has code related to Naive Bayes Classifier.  
 
-## Random Forest Model
-File name: Fraud Test Random Forest (draft).py
-Description: This is a Python Jupyter Notebook file which has code related to Random Forest. 
+## Random Forest Model  
+File name: Fraud Test Random Forest (draft).py  
+Description: This is a Python Jupyter Notebook file which has code related to Random Forest.   
 
-## Tableau Visualizations 
-File name: Final Visualizations(1).twbx
-Description: This is a Tableau file containing all visualizations and dashboards completed in Tableau.
+## Tableau Visualizations   
+File name: Final Visualizations(1).twbx  
+Description: This is a Tableau file containing all visualizations and dashboards completed in Tableau.  
 
-## Correlation Plot
-File Name: Correlation Plots.R
-Description: This is an R Studio file containing code for numeric and important variable correlation plots (4).
+## Correlation Plot  
+File Name: Correlation Plots.R  
+Description: This is an R Studio file containing code for numeric and important variable correlation plots (4).  
