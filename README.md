@@ -2,8 +2,8 @@
 The U.S. Citizenship and Immigration Services is an agency that administers the country's immigration system. There are several benefits to aliens who marry a U.S. citizen. For this reason, a lot of aliens are known to enter sham marriages in order to obtain immigration benefits. The objective of this project is to find the data and create machine learning models that can predict fraudulent behavior in USCIS immigration applications. 
 
 ## Table of Contents
-[Final Dataset](##final-dataset) 
-[Initial Dataset](##initial-dataset)
+* [Final Dataset](##final-dataset) 
+* [Initial Dataset](##initial-dataset)
 [Logistic Regression Model](##logistic-regression-model)
 [Support Vector Machine Model](##support-vector-machine-model)
 [Naïve Bayes Classification Model](##naive-bayes-classification-model)
