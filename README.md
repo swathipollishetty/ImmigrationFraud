@@ -28,15 +28,15 @@ File name: SVM_MarriageFraud.ipynb
 Description: This is python Jupyter Notebook file which has code related to SVM model.
 
 ## Naïve Bayes Classification Model
-File name: NaiveBayesClassifier.spin.Rmd
+[File name: NaiveBayesClassifier.spin.Rmd](
 Description: This is an R file which has code related to Naive Bayes Classifier.
 
 ## Random Forest Model
 File name: Fraud Test Random Forest (draft).py
 Description: This is a Python Jupyter Notebook file which has code related to Random Forest. 
 
-## Tableau Visualizations
-File name: Final Visualizations(1).twbx
+## Tableau Visualizations 
+[File name: Final Visualizations(1).twbx](Final Visualizations (1).twbx)
 Description: This is a Tableau file containing all visualizations and dashboards completed in Tableau.
 
 ## Correlation Plot
