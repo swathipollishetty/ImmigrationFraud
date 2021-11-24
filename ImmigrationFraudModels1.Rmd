@@ -1,0 +1,236 @@
+---
+title: "ImmigrationFraudModels1"
+author: "Arush Kukreja"
+date: "10/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading libraries and dataset
+### Preparing data for modeling
+
+```{r pressure, echo=FALSE}
+
+
+# Load libraries
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(tidymodels)
+library(vip)
+
+# Load dataset
+
+data_DF <- read_csv("C:/Users/ak-77/Desktop/GMU/Fall 2021/DAEN 690/GCMF10k_6.csv", 
+                      col_types = cols(Monthly_Income_Spouse1 = col_number(), 
+                                       Annual_Income_Spouse1 = col_number(), 
+                                       Annual_Income_Immigrant = col_number(),
+                                       Annual_Income_Uscitizen = col_number(),
+                                       Expiration_Date_of_Passport_Immigrant = col_date(format = "%m/%d/%Y"), 
+                                       Date_of_Marriage = col_date(format = "%m/%d/%Y"), 
+                                       Monthly_Income_Spouse2 = col_number(), 
+                                       Annual_Income_Spouse2 = col_number()), na = "NA") %>% dplyr::select(-c("Address", "City", "Monthly_Income_Spouse1", "Monthly_Income_Spouse2", "Zip_Code", "State", "Education_Spouse1", "USCIS_id_Immigrant", "Education_Spouse2", "Race_Spouse1", "Race_Spouse2", "Citizenship_Spouse1", "Citizenship_Spouse2", "Education_Immigrant", "Education_UScitizen", "Employment_Spouse1", "Employment_Spouse2", "Marital_Status")) # remove features from forms that have other related features
+head(data_DF)
+
+
+# Convert all categorical features into factors
+
+  
+data_DF$Fraud <- as.factor(data_DF$Fraud)
+data_DF$Age_Spouse1 <- as.numeric(data_DF$Age_Spouse1)
+data_DF$Age_Spouse2 <- as.numeric(data_DF$Age_Spouse2)
+data_DF$Sex_Spouse1 <- as.factor(data_DF$Sex_Spouse1)
+data_DF$Sex_Spouse2 <- as.factor(data_DF$Sex_Spouse2)
+data_DF$Hispanic_Spouse1 <- as.factor(data_DF$Hispanic_Spouse1)
+data_DF$Hispanic_Spouse2 <- as.factor(data_DF$Hispanic_Spouse2)
+data_DF$Previously_Denied_Visa_Immigrant <- as.factor(data_DF$Previously_Denied_Visa_Immigrant)
+data_DF$Foreign_Residence_Requirement_Immigrant <- as.factor(data_DF$Foreign_Residence_Requirement_Immigrant)
+data_DF$History_of_Crime_UScitizen <- as.factor(data_DF$History_of_Crime_UScitizen)
+data_DF$History_of_Crime_Immigrant <- as.factor(data_DF$History_of_Crime_Immigrant)
+data_DF$Expired_Passport_Marriage <- as.factor(data_DF$Expired_Passport_Marriage)
+data_DF$Previously_Married_Uscitizen <- as.factor(data_DF$Previously_Married_Uscitizen)
+data_DF$HigherEducation_Immigrant <- as.factor(data_DF$HigherEducation_Immigrant)
+data_DF$HigherEducation_Uscitizen <- as.factor(data_DF$HigherEducation_Uscitizen)
+data_DF$Employment_Uscitizen <- factor(data_DF$Employment_Uscitizen, levels= c("FT", "PT", "Unemployed", "Temporary"))
+data_DF$Employment_Immigrant <- factor(data_DF$Employment_Immigrant, levels= c("FT", "PT", "Unemployed", "Temporary"))
+data_DF$ChildrenBeforeMarriage_Uscitizen <- as.factor(data_DF$ChildrenBeforeMarriage_Uscitizen)
+data_DF$Citizenship_Immigrant <- factor(data_DF$Citizenship_Immigrant, levels= c("Mexico", "India", "China", "Philippines", "El Salvador", "Vietnam", "Cuba",  "Dominican Republic", "South Korea", "Guatemala", "Hispanic"))
+data_DF$Age_of_Immigrant <- as.numeric(data_DF$Age_of_Immigrant)
+data_DF$Age_of_Uscitizen <- as.numeric(data_DF$Age_of_Uscitizen)
+
+head(data_DF)
+
+# If there are NA or empty spaces then input 1
+
+data_DF <- data_DF[!apply(is.na(data_DF) | data_DF == "", 1, all),]
+
+# Re-level fraud column so you don't get flipped results
+
+data_DF$Fraud = relevel(data_DF$Fraud, ref = 2)
+levels(data_DF$Fraud)
+
+# Create additional calculated columns for average age and combined income for analysis
+
+data_DF$AverageAge <- (data_DF$Age_Spouse1 + data_DF$Age_Spouse2)/2
+data_DF$CombinedIncome <- data_DF$Annual_Income_Uscitizen+data_DF$Annual_Income_Immigrant
+
+# Remove additional features to use in the models
+
+data_DF <- data_DF %>% dplyr::select(-c(StatusSpouse1, StatusSpouse2, Age_Spouse1, Age_Spouse2, Sex_Spouse1, Sex_Spouse2, "Annual_Income_Spouse1", "Annual_Income_Spouse2", "History_of_Crime_Immigrant", Hispanic_Spouse1, Hispanic_Spouse2, "Expiration_Date_of_Passport_Immigrant", "Age_of_Uscitizen", "Age_of_Immigrant", "Date_of_Marriage"))
+
+head(data_DF) # view top few records of the dataset
+
+```
+
+## Logistic Regression Model
+
+```{r}
+
+# The training data is split into train and test data here so we can test accuracy of the model before fitting it to the test data
+# Using the 80-20 rules I assigned 80% train and 20% test data at all times
+# default is the response/target/dependent variable
+
+data_split <- initial_split(data_DF, prop = 0.80,
+                                strata = Fraud)
+
+data_training <- data_split %>% training()
+
+data_test <- data_split %>% testing()
+
+# Feature engineering recipe is created to:
+# 1. Remove skewness from numeric predictors
+# 2. Normalize all numeric variables
+# 3. Create dummy variables for all nominal predictors
+
+data_recipe <- recipe(Fraud ~ ., data = data_training) %>% 
+                   step_YeoJohnson(all_numeric(), -all_outcomes()) %>% 
+                   step_normalize(all_numeric(), -all_outcomes()) %>% 
+                   step_dummy(all_nominal(), -all_outcomes())
+
+# The prep function computes everything so that preprocessing steps can be executed on the training data
+# The bake function takes the prepped recipe and applies it to the new data which happens to be the training data in this case
+
+data_recipe %>% 
+  prep(training = data_training) %>% 
+  bake(new_data = NULL)
+
+# The logistic regression model process is initiated
+
+logistic_model <- logistic_reg() %>% 
+                  set_engine('glm') %>% 
+                  set_mode('classification')
+
+# Create workflow and add model and recipe to the workflow
+
+data_wf <- workflow() %>% 
+               add_model(logistic_model) %>% 
+               add_recipe(data_recipe)
+
+# Fit the workflow to the training data
+
+logistic_fit <- data_wf %>% 
+                fit(data = data_training)
+
+# Gather outputs to the logistic regression model
+
+summarytable <- tidy(logistic_fit)
+summarytable
+
+# Extract the trained model from the workflow fit
+
+data_trained_model <- logistic_fit %>% 
+                       pull_workflow_fit()
+
+# Generate variable importance chart to show which features the model thought was important
+
+vip(data_trained_model)
+
+# Generate prediction class and probabilities on the test section of our training data to see how the model performs
+
+predictions_categories <- predict(logistic_fit, 
+                                  new_data = data_test)
+predictions_probabilities <- predict(logistic_fit, 
+                                     new_data = data_test, 
+                                     type = 'prob')
+
+# Combine the columns
+
+test_results <- data_test %>% dplyr::select(Fraud) %>% 
+                bind_cols(predictions_categories) %>% 
+                bind_cols(predictions_probabilities)
+
+test_results
+
+conf_mat(test_results,
+         truth = Fraud,
+         estimate = .pred_class) # Confusion matrix
+
+roc_curve(test_results,
+          truth = Fraud,
+          estimate = .pred_Yes) 
+
+roc_curve(test_results,
+          truth = Fraud,
+          estimate = .pred_Yes) %>%
+  autoplot() # ROC curve
+
+roc_auc(test_results,
+        truth = Fraud,
+        .pred_Yes) # ROC AUC value
+
+my_metrics <- metric_set(accuracy, sens, spec, f_meas, roc_auc) # Metrics we want to generate to evaluate model
+
+my_metrics(test_results,
+           truth = Fraud,
+           estimate = .pred_class,
+           .pred_Yes)
+
+last_fit_applicant <- data_wf %>%
+                     last_fit(split = data_split,
+                              metrics = my_metrics)
+
+
+
+
+
+```
+
+## Adding test data and predicting marriage fraud
+
+#### You will have to load the new data and select features for the model and then remove comments for the code to run
+
+```{r}
+
+# Load new data to predict
+
+# test <- read_csv("C:/Users/ak-77/Desktop/GMU/Fall 2021/DAEN 690/test.csv")
+
+# select columns to include for the model
+
+# Generate prediction class and probabilities on the test section of our training data to see how the model performs
+
+# predictions_categories1 <- predict(logistic_fit, 
+                                  # new_data = test)
+# predictions_probabilities1 <- predict(logistic_fit, 
+#                                      new_data = test, 
+#                                      type = 'prob')
+
+# Combine the columns
+# fraud_results <- test %>%  
+#                 bind_cols(predictions_categories1) %>% 
+#                 bind_cols(predictions_probabilities1)
+# fraud_results
+
+# Write CSV file without header and index
+
+# write.table(fraud_results,               
+#             "fraudresults.csv")
+
+```
