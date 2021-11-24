@@ -12,7 +12,7 @@ The U.S. Citizenship and Immigration Services is an agency that administers the 
 * [Correlation Plot](##correlation-plot)
 
 ## Final Dataset  
-File name: GCMF10K_3.csv  
+File name: GCMF10K_6.csv  
 Description: The dataset we have is an output of our research about the Green Card marriage fraud studies. It includes 10000 rows and 33 columns.  
 
 ## Initial Dataset  
@@ -20,8 +20,8 @@ File name: ResearchlData.csv
 Description: This is the initial data we have obtain from our research obtained from a study. It includes 28 rows and 8 columns.  
 
 ## Logistic Regression Model  
-File name: ImmigrationFraudModels.Rmd  
-Description: This is an R file which has code related to Logistic Regression model and visualizations.  
+File name: ImmigrationFraudModels1.Rmd  
+Description: This is an R file which has code related to Logistic Regression model.  
 
 ## Support Vector Machine Model  
 File name: SVM_MarriageFraud.ipynb  
